@@ -1,8 +1,6 @@
 import argparse
-
-from models.QLearning.config import *
-from models.QLearning.QLearning import *
-
+from models.Line.config import *
+from models.Line.QLearning import *
 
 def parse_args():
     """Parse input arguments."""

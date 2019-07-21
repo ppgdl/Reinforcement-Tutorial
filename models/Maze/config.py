@@ -1,13 +1,10 @@
 class AgentConfig(object):
     agent_name = ""
     env_name = ""
-    n_state = 6
-    action_name = ['right', 'left']
-    epsilon = 0.9
-    alpha = 0.1
+    n_rows = 100
     lambbds = 0.9
-    max_epoch = 13
-    fresh_update = 2
+    epsilon = 0.9
+    lr = 0.01
 
 
 def get_config(FLAGS):
