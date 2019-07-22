@@ -14,15 +14,22 @@ class AgentConfig(object):
     screen_width = 84
     screen_height = 84
     max_reward = 1
-    min_rewars = -1
-    actoin_repeat = 1
+    min_reward = -1
+    action_repeat = 1
     random_start = 30
     display = True
+
+    # log
+    imgpath = "E:\\code\\RL\\Reinforcement-Tutorial\\log_image\\save"
 
 
 
 def get_config(FLAGS):
     config = AgentConfig()
+
+    if isinstance(FLAGS, dict):
+        return config
+
     FLAGS = FLAGS.__dict__
 
     for k in FLAGS.keys():

@@ -12,3 +12,12 @@ class DQN(object):
 
     def update_target_network(self):
         pass
+
+    def train(self):
+        # replay buffer store
+
+        # create predict_network
+
+        # create target network
+
+        pass

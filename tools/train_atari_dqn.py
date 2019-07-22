@@ -47,6 +47,10 @@ def update_log_checkpotin_path(config):
     if not os.path.exists(checkpoint_path):
         os.makedirs(checkpoint_path)
     setattr(config, 'checkout', checkpoint_path)
+    img_path = os.path.join(ROOT, 'log_image', prefix)
+    if not os.path.exists(img_path):
+        os.makedirs(img_path)
+    setattr(config, 'imgpath', img_path)
 
 
 if __name__ == '__main__':
