@@ -56,21 +56,24 @@ def update_log_checkpotin_path(config):
 if __name__ == '__main__':
     args = parse_args()
 
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.gpu_fraction)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_fraction)
     with tf.Session(config=tf.ConfigProto(gpu_options = gpu_options)) as sess:
         config = get_config(args)
 
         # setup log path and checkpoint path
         update_log_checkpotin_path(config)
 
+        # init env
         env = Enviroment("PPGDL", config)
+        # init DQN including network
         brain = DQN("buheng", config, sess)
-        agent = Agent(config.agent_name, config, env)
+        # init agent
+        agent = Agent(config.agent_name, config, env, brain)
 
         if config.train:
-            DQN.train()
+            brain.train()
         else:
-            DQN.eval()
+            brain.eval()
 
     print('Training Done!')
 

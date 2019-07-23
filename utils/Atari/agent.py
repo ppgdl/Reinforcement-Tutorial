@@ -1,8 +1,10 @@
 class Agent(object):
 
-    def __init__(self, name, config, env):
+    def __init__(self, name, config, env, brain):
         self.name = name
         self.config = config
         self.env = env
+        self.brain = brain
 
-        pass
+    def train(self):
+        sess = self.brain.sess

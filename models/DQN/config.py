@@ -1,5 +1,11 @@
 class AgentConfig(object):
-    # traininig config
+    # DQN config
+    scale = 100
+    max_step = 5000 * scale
+    memory_length = 100 * scale
+    history_length = 4
+
+    # train config
     batch_size = 32
     num_epoch = 10000
     replay_buffer_size = 10000
@@ -7,7 +13,10 @@ class AgentConfig(object):
     gpu_index = 0
     gpu_fraction = 0.7
     env_name = "PPGDL"
-    lr = 0.001
+    learning_rate = 0.00025
+    learning_rate_minimum = 0.00025
+    learning_rate_decay = 0.96
+    learning_rate_decay_step = 5 * scale
 
     # env config
     env_name = 'Breakout-v0'
@@ -19,9 +28,11 @@ class AgentConfig(object):
     random_start = 30
     display = True
 
+    # agent config
+    action_length = 4
+
     # log
     imgpath = "E:\\code\\RL\\Reinforcement-Tutorial\\log_image\\save"
-
 
 
 def get_config(FLAGS):
@@ -35,6 +46,8 @@ def get_config(FLAGS):
     for k in FLAGS.keys():
         v = FLAGS[k]
         if hasattr(config, k):
+            setattr(config, k, v)
+        else:
             setattr(config, k, v)
 
     return config

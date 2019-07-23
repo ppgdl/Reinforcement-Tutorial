@@ -10,7 +10,7 @@ class Enviroment(object):
         self.name = name
         self.config = config
 
-        self.env = gym.make(config.env_name)
+        self.env = gym.make(config.agent_name)
         self.env.reset()
 
         self.screen_width = config.screen_width
@@ -73,7 +73,7 @@ class Enviroment(object):
         return self.env.action_space.get_action_meanings()
 
 
-if __name__ == '__main__':
+def test():
     from models.DQN.config import get_config
     args = get_config(dict())
 
