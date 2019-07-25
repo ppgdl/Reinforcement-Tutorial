@@ -25,9 +25,8 @@ class Enviroment(object):
         self.terminal = True
 
     def new_game(self):
-        if self.lives == 0:
-            self._screen = self.env.reset()
-        self._step(0)
+        self._screen = self.env.reset()
+        self.step(0)
         self.render()
 
         return self.screen, 0, 0, self.terminal
@@ -37,13 +36,9 @@ class Enviroment(object):
         if self.display:
             self.env.render()
 
-    def _step(self, action):
+    def step(self, action):
         self._screen, self.reward, self.terminal, _ = self.env.step(action)
-
-    def _random_step(self):
-        action = self.env.action_space.sample()
-        print('action: {}'.format(action))
-        self._step(action)
+        self.render()
 
     @property
     def screen(self):

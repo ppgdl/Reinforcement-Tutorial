@@ -71,9 +71,9 @@ if __name__ == '__main__':
         agent = Agent(config.agent_name, config, env, brain)
 
         if config.train:
-            brain.train()
+            agent.train()
         else:
-            brain.eval()
+            agent.eval()
 
     print('Training Done!')
 

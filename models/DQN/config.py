@@ -1,14 +1,18 @@
 class AgentConfig(object):
     # DQN config
     scale = 100
-    max_step = 5000 * scale
-    memory_length = 100 * scale
     history_length = 4
 
     # train config
     batch_size = 32
-    num_epoch = 10000
-    replay_buffer_size = 10000
+    num_epoch = 2500
+    # replay_buffer_size = 10000
+    replay_buffer_size = 1 * 100
+    max_epsilon_step = 5000 * 100
+    epsilon_start = 1.0
+    epsilon_end = 0.1
+    update_target_network_interval = 100 * 100
+
     history = 4
     gpu_index = 0
     gpu_fraction = 0.7
@@ -17,6 +21,7 @@ class AgentConfig(object):
     learning_rate_minimum = 0.00025
     learning_rate_decay = 0.96
     learning_rate_decay_step = 5 * scale
+    discount_factor = 0.99
 
     # env config
     env_name = 'Breakout-v0'
