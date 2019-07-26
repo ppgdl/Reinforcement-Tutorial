@@ -37,7 +37,7 @@ class Agent(object):
         # screen have been resize to 84 * 84
         screen, _, _, terminal = self.env.new_game()
         screen_state = np.stack([screen] * 4, axis=2)
-
+        print("restore_buffer_starting")
         for i in range(replay_buffer_size):
             action = self.action_choose(screen_state, 1.0)
             self.env.step(action)
@@ -50,7 +50,7 @@ class Agent(object):
                 screen_state = np.stack([screen] * 4, axis=2)
             else:
                 screen_state = screen_state_next
-
+        print("restore_buffer_done!")
         self.state = screen_state
 
     def get_epsilons(self, epsilon_start, epsilon_end, t_step, max_step):
@@ -64,6 +64,10 @@ class Agent(object):
 
         # save model
         saver = tf.train.Saver(max_to_keep=20)
+
+        # tf summary file
+        train_writer = tf.summary.FileWriter(self.config.log, self.brain.sess.graph)
+        log_writer = open(os.path.join(self.config.log, "log.txt"), "w")
 
         total_step = 0
         num_epoch = self.config.num_epoch
@@ -126,20 +130,29 @@ class Agent(object):
 
                 feed_dict = {self.brain.predict_input_pl: states_batch_pl,
                              self.brain.predict_action_pl: action_batch_pl,
-                             self.brain.predict_target_pl: predict_target_pl}
+                             self.brain.predict_target_pl: predict_target_pl,
+                             self.brain.learning_rate_step: total_step}
 
-                loss_v, delta_v =  self.brain.sess.run([self.brain.loss, self.brain.delta], feed_dict=feed_dict)
+                loss_v, delta_v, summary =  self.brain.sess.run([self.brain.loss, self.brain.delta, self.brain.merged],
+                                                                feed_dict=feed_dict)
+                train_writer.add_summary(summary, total_step)
+
                 self.episode_losses[i_epoch] += loss_v
 
-                if total_step % 100 == 0:
-                    print("loss: {:4f}, {:}/{:}".format(loss_v, total_step, i_epoch))
+                line = "loss: {:4f}, {:}/{:}".format(loss_v, total_step, i_epoch)
+
+                if total_step % 1000 == 0:
+                    print(line)
+                    log_writer.writelines(line + '\n')
 
                 if terminal:
                     break
 
             avg_loss = self.episode_losses[i_epoch] / self.episode_rewards[i_epoch]
-            print("avg_loss: {:4f}, reward: {:}, step: {:}, {:}/{:}".format(avg_loss,
+            avg_line = "avg_loss: {:4f}, reward: {:}, step: {:}, {:}/{:}".format(avg_loss,
                                                                             self.episode_rewards[i_epoch],
                                                                             self.episode_lengths[i_epoch],
                                                                             i_epoch,
-                                                                            num_epoch))
+                                                                            num_epoch)
+            print(avg_line)
+            log_writer.writelines(avg_line + "\n")

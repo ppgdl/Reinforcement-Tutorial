@@ -7,7 +7,7 @@ class AgentConfig(object):
     batch_size = 32
     num_epoch = 2500
     # replay_buffer_size = 10000
-    replay_buffer_size = 1 * 100
+    replay_buffer_size = 100 * 100
     max_epsilon_step = 5000 * 100
     epsilon_start = 1.0
     epsilon_end = 0.1

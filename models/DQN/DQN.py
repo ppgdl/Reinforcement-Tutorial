@@ -21,8 +21,10 @@ class DQN(object):
         self.learning_rate_op = None
         self.optimizer = None
         self.train_op = None
+        self.update_network_ops = None
         self.loss = None
         self.delta = None
+        self.merged = None
 
         # target network
         self.target_input_pl = None
@@ -33,9 +35,9 @@ class DQN(object):
         self.build_dqn(sess)
 
     def build_dqn(self, sess):
-        #with tf.Graph().as_default():
         self.create_predict_network()
         self.create_target_network()
+        self.update_network_operation()
         sess.run(tf.global_variables_initializer())
 
     def create_predict_network(self):
@@ -65,6 +67,13 @@ class DQN(object):
                                                self.config.learning_rate_decay_step,
                                                self.config.learning_rate_decay,
                                                staircase=True))
+
+        tf.summary.scalar("loss", self.loss)
+        tf.summary.scalar("lr", self.learning_rate_op)
+        tf.summary.scalar("delta", tf.reduce_mean(self.delta))
+        tf.summary.scalar("p_rewards", tf.reduce_mean(predict_rewards))
+        tf.summary.scalar("t_rewards", tf.reduce_mean(self.predict_target_pl))
+        self.merged = tf.summary.merge_all()
 
         self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate_op, momentum=0.95, epsilon=0.01)
         self.train_op = self.optimizer.minimize(self.loss)
@@ -124,15 +133,19 @@ class DQN(object):
     """
     1. copy rewards from predict network to target network
     """
-    def update_target_network(self):
+    def update_network_operation(self):
         predict_params = [t for t in tf.trainable_variables() if t.name.startswith("predict")]
         target_params = [t for t in tf.global_variables() if t.name.startswith("target")]
 
-        update_ops = []
+        self.update_network_ops = []
         for target_tensor in target_params:
             for predict_tensor in predict_params:
                 if target_tensor.name.replace('target', 'predict') == predict_tensor.name:
                     op = target_tensor.assign(predict_tensor)
-                    update_ops.append(op)
+                    self.update_network_ops.append(op)
 
-        self.sess.run(update_ops)
+        #self.sess.run(update_network_ops)
+
+    def update_target_network(self):
+
+        self.sess.run(self.update_network_ops)
