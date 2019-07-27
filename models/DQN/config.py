@@ -5,7 +5,7 @@ class AgentConfig(object):
 
     # train config
     batch_size = 32
-    num_epoch = 2500
+    num_epoch = 10000
     # replay_buffer_size = 10000
     replay_buffer_size = 100 * 100
     max_epsilon_step = 5000 * 100
@@ -18,7 +18,7 @@ class AgentConfig(object):
     gpu_fraction = 0.7
     env_name = "PPGDL"
     learning_rate = 0.00025
-    learning_rate_minimum = 0.00025
+    learning_rate_minimum = 0.0025
     learning_rate_decay = 0.96
     learning_rate_decay_step = 5 * scale
     discount_factor = 0.99

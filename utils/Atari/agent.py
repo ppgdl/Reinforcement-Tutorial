@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+import time
 import itertools
 import random
 
@@ -18,6 +19,7 @@ class Agent(object):
         self.episode_rewards = []
         self.episode_lengths = []
         self.episode_losses = []
+        self.train_batch_time = []
 
         self.state = None
 
@@ -83,9 +85,11 @@ class Agent(object):
             self.episode_rewards.append([])
             self.episode_lengths.append([])
             self.episode_losses.append([])
+            self.train_batch_time.append([])
             self.episode_rewards[-1] = 0
             self.episode_rewards[-1] = 0
             self.episode_losses[-1] = 0
+            self.train_batch_time[-1] = 0
 
             # reset environment
             screen, _, _, _ = self.env.new_game()
@@ -93,14 +97,18 @@ class Agent(object):
             loss = None
 
             for t in itertools.count():
+                t1 = time.time()
                 epsilon = self.get_epsilons(epsilon_start, epsilon_end, total_step, max_epsilon_step)
 
                 # update target network
                 if total_step % update_target_network_interval == 0:
+                    line = "copy parameters"
+                    print(line)
+                    log_writer.writelines(line + "\n")
                     self.brain.update_target_network()
 
                 # update replay_buffer
-                action = self.action_choose(screen_state, 1.0)
+                action = self.action_choose(screen_state, epsilon)
                 self.env.step(action)
                 screen_next, reward, terminal = self.env.state
                 screen_state_next = np.append(screen_state[:, :, 1:], np.expand_dims(screen_next, 2), axis=2)
@@ -111,7 +119,7 @@ class Agent(object):
 
                 # record reward and step in each game
                 self.episode_rewards[i_epoch] += reward
-                self.episode_rewards[i_epoch] = t
+                self.episode_lengths[i_epoch] = t
 
                 # sample train sample
                 samples = random.sample(self.replay_buffer, batch_size)
@@ -123,7 +131,7 @@ class Agent(object):
                 v_targets = v_targets[np.arange(batch_size), best_action]
                 v_target_batch = reward_batch + np.invert(terminal_batch) * discont_factor * v_targets
 
-                states_batch_pl = states_batch
+                states_batch_pl = states_batch / 255.0
                 action_batch_pl = np.zeros((batch_size, 4))
                 action_batch_pl[np.arange(batch_size), action_batch] = 1
                 predict_target_pl = v_target_batch
@@ -133,11 +141,20 @@ class Agent(object):
                              self.brain.predict_target_pl: predict_target_pl,
                              self.brain.learning_rate_step: total_step}
 
-                loss_v, delta_v, summary =  self.brain.sess.run([self.brain.loss, self.brain.delta, self.brain.merged],
-                                                                feed_dict=feed_dict)
+                loss_v, delta_v, summary, _ = self.brain.sess.run([self.brain.loss,
+                                                                 self.brain.delta,
+                                                                 self.brain.merged,
+                                                                 self.brain.train_op],
+                                                                 feed_dict=feed_dict)
+                episode_summary = tf.Summary()
+                episode_summary.value.add(simple_value=epsilon, tag="epsilon")
+                train_writer.add_summary(episode_summary, total_step)
                 train_writer.add_summary(summary, total_step)
+                t2 = time.time()
+                delta_time = t2 - t1
 
                 self.episode_losses[i_epoch] += loss_v
+                self.train_batch_time[i_epoch] += delta_time
 
                 line = "loss: {:4f}, {:}/{:}".format(loss_v, total_step, i_epoch)
 
@@ -145,14 +162,25 @@ class Agent(object):
                     print(line)
                     log_writer.writelines(line + '\n')
 
+                if total_step % 5000 == 0:
+                    save_path = saver.save(self.brain.sess, os.path.join(self.config.checkout,
+                                                                         "DQN_" + str(total_step) + ".ckpt"))
+                    line = "Model save in file: {}".format(save_path)
+                    print(line)
+                    log_writer.writelines(line + '\n')
+
                 if terminal:
                     break
 
-            avg_loss = self.episode_losses[i_epoch] / self.episode_rewards[i_epoch]
-            avg_line = "avg_loss: {:4f}, reward: {:}, step: {:}, {:}/{:}".format(avg_loss,
-                                                                            self.episode_rewards[i_epoch],
-                                                                            self.episode_lengths[i_epoch],
-                                                                            i_epoch,
-                                                                            num_epoch)
+                total_step += 1
+
+            avg_loss = self.episode_losses[i_epoch] / self.episode_lengths[i_epoch]
+            avg_time = self.train_batch_time[i_epoch] / self.episode_lengths[i_epoch]
+            avg_line = "avg_loss: {:4f}, reward: {:}, batch_time: {:4f} step: {:}, {:}/{:}".format(avg_loss,
+                                                                                                   self.episode_rewards[i_epoch],
+                                                                                                   avg_time,
+                                                                                                   self.episode_lengths[i_epoch],
+                                                                                                   i_epoch,
+                                                                                                   num_epoch)
             print(avg_line)
             log_writer.writelines(avg_line + "\n")
