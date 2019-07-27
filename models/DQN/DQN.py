@@ -91,28 +91,18 @@ class DQN(object):
         with tf.variable_scope(name):
             # conv
             conv1 = tf.contrib.layers.conv2d(input_pl, 32, 8, 4, activation_fn=tf.nn.relu,
-                                             weights_initializer=tf.truncated_normal_initializer(0, 0.02),
-                                             biases_initializer=tf.constant_initializer(0.0),
                                              trainable=trainable)
             conv2 = tf.contrib.layers.conv2d(conv1, 64, 4, 2, activation_fn=tf.nn.relu,
-                                             weights_initializer=tf.truncated_normal_initializer(0, 0.02),
-                                             biases_initializer=tf.constant_initializer(0.0),
                                              trainable=trainable)
             conv3 = tf.contrib.layers.conv2d(conv2, 64, 3, 1, activation_fn=tf.nn.relu,
-                                             weights_initializer=tf.truncated_normal_initializer(0, 0.02),
-                                             biases_initializer=tf.constant_initializer(0.0),
                                              trainable=trainable)
 
             # full connection
             flattened = tf.contrib.layers.flatten(conv3)
             fc1 = tf.contrib.layers.fully_connected(flattened, 512,
-                                                    weights_initializer=tf.truncated_normal_initializer(0, 0.02),
-                                                    biases_initializer=tf.constant_initializer(0.0),
                                                     trainable=trainable)
             predictions = tf.contrib.layers.fully_connected(fc1,
                                                             self.config.action_length,
-                                                            weights_initializer=tf.truncated_normal_initializer(0, 0.02),
-                                                            biases_initializer=tf.constant_initializer(0.0),
                                                             trainable=trainable)
             predict_action = tf.argmax(predictions, dimension=1)
 
