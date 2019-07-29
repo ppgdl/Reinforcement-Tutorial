@@ -3,6 +3,7 @@ from tqdm import tqdm
 import time
 import itertools
 import random
+import sys
 
 from utils.Atari.tf_utils import *
 
@@ -35,12 +36,12 @@ class Agent(object):
         return action
 
     def restore_buffer(self):
-        replay_buffer_size = self.config.replay_buffer_size
+        replay_buffer_init_size = self.config.replay_buffer_init_size
         # screen have been resize to 84 * 84
         screen = self.env.new_game()
         screen_state = np.stack([screen] * 4, axis=2)
         print("restore_buffer_starting")
-        for i in range(replay_buffer_size):
+        for i in range(replay_buffer_init_size):
             action = self.action_choose(screen_state, 1.0)
             screen_next, reward, terminal = self.env.step(action)
             screen_state_next = np.append(screen_state[:, :, 1:], np.expand_dims(screen_next, 2), axis=2)
@@ -168,10 +169,11 @@ class Agent(object):
                 self.train_batch_time[i_epoch] += delta_time
                 avg_predict_targets = np.mean(predict_target_pl)
 
-                line = "loss: {:4f}, {:}/{:}".format(loss_v, total_step, i_epoch)
+                line = "\rloss: {:8f}, {:}/{:}".format(loss_v, total_step, i_epoch)
 
                 if total_step % 10 == 0:
-                    print(line)
+                    print(line, end="")
+                    sys.stdout.flush()
                     log_writer.writelines(line + '\n')
 
                 if total_step % 5000 == 0:
