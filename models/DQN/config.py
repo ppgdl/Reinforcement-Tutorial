@@ -7,7 +7,7 @@ class AgentConfig(object):
     batch_size = 32
     num_epoch = 10000
     # replay_buffer_size = 10000
-    replay_buffer_size = 100 * 100
+    replay_buffer_size = 500 * 100
     max_epsilon_step = 5000 * 100
     epsilon_start = 1.0
     epsilon_end = 0.1
@@ -15,16 +15,17 @@ class AgentConfig(object):
 
     history = 4
     gpu_index = 0
-    gpu_fraction = 0.7
+    gpu_fraction = 0.4
     env_name = "PPGDL"
-    learning_rate = 0.00025
-    learning_rate_minimum = 0.0025
+    learning_rate = 0.000125
+    learning_rate_minimum = 0.00025
     learning_rate_decay = 0.96
     learning_rate_decay_step = 5 * scale
     discount_factor = 0.99
 
     # env config
     env_name = 'Breakout-v0'
+    agent_name = 'Breakout-v0'
     screen_width = 84
     screen_height = 84
     max_reward = 1
@@ -38,6 +39,8 @@ class AgentConfig(object):
 
     # log
     imgpath = "E:\\code\\RL\\Reinforcement-Tutorial\\log_image\\save"
+    log = "log"
+    checkpoint = "checkpoint"
 
 
 def get_config(FLAGS):

@@ -20,16 +20,11 @@ class Enviroment(object):
 
         self.display = config.display
 
-        self._screen = None
-        self.reward = 0
-        self.terminal = True
-
     def new_game(self):
-        self._screen = self.env.reset()
-        self.step(0)
-        self.render()
+        state = self.env.reset()
+        state = resizeimage(state, self.screen_height, self.screen_width)
 
-        return self.screen, 0, 0, self.terminal
+        return state
 
     # fresh screen
     def render(self):
@@ -37,20 +32,15 @@ class Enviroment(object):
             self.env.render()
 
     def step(self, action):
-        self._screen, self.reward, self.terminal, _ = self.env.step(action)
+        state_next, reward, terminal, _ = self.env.step(action)
+        state_next = resizeimage(state_next, self.screen_height, self.screen_width)
         self.render()
 
-    @property
-    def screen(self):
-        return resizeimage(self._screen, self.screen_height, self.screen_width)
+        return state_next, reward, terminal
 
     @property
     def lives(self):
         return self.env.ale.lives()
-
-    @property
-    def state(self):
-        return self.screen, self.reward, self.terminal
 
     @property
     def action_size(self):
@@ -72,27 +62,109 @@ def test():
     from models.DQN.config import get_config
     args = get_config(dict())
 
+    """
+    # init env and reset env
+    # env = Enviroment('Breakout-v0', args)
+    env = gym.make("Breakout-v0")
+    env.reset()
+    env.step(3)
+    env.step(3)
+    env.render()
+
+    for i in range(10):
+        screen, rewards, terminal, _ = env.step(0)
+        screen = resizeimage(screen, 84 * 4, 84 * 4)
+
+        env.render()
+        for j in range(3):
+            screen, rewards, terminal, _ = env.step(2)
+            env.render()
+            print(3)
+            screen = resizeimage(screen, 84 * 4, 84 * 4)
+            save_image(screen, args, str(i) + '-' + str(j) + '-' + str(2))
+            if terminal:
+                print("Reset Game")
+                _ = env.reset()
+        for j in range(3):
+            screen, rewards, terminal, _ = env.step(3)
+            env.render()
+            print(3)
+            screen = resizeimage(screen, 84 * 4, 84 * 4)
+            save_image(screen, args, str(i) + '-' + str(3 + j) + '-' + str(3))
+            if terminal:
+                print("Reset Game")
+                _ = env.reset()
+        for j in range(60):
+            screen, rewards, terminal, _ = env.step(1)
+            env.render()
+            #time.sleep(1)
+            print(1)
+            image_name = str(i) + '-' + str(6 + j) + '-' + str(1)
+            if terminal:
+                image_name = str(i) + '-' + str(6 + j) + '-' + str(1) + '-terminal'
+            screen = resizeimage(screen, 84 * 4, 84 * 4)
+            save_image(screen, args, image_name)
+            if terminal:
+                print("Reset Game")
+                _ = env.reset()
+        """
+    """
     # init env and reset env
     env = Enviroment('Breakout-v0', args)
+    env.step(3)
+    env.step(3)
+    env.render()
 
-    for i in range(1000):
-        env._step(1)
+    for i in range(10):
+        screen, rewards, terminal = env.step(0)
+
         env.render()
-        for j in range(5):
-            env._step(3)
+        for j in range(3):
+            screen, rewards, terminal = env.step(2)
+            env.render()
             print(3)
-            time.sleep(1)
+            save_image(screen, args, str(i) + '-' + str(j) + '-' + str(2))
+            if terminal:
+                print("Reset Game")
+                _ = env.new_game()
+        for j in range(3):
+            screen, rewards, terminal = env.step(3)
             env.render()
-            save_image(env.screen, env.config, j)
-        for j in range(5):
-            env._step(2)
-            print(2)
-            time.sleep(1)
+            print(3)
+            save_image(screen, args, str(i) + '-' + str(3 + j) + '-' + str(3))
+            if terminal:
+                print("Reset Game")
+                _ = env.new_game()
+        for j in range(60):
+            screen, rewards, terminal = env.step(1)
             env.render()
-            save_image(env.screen, env.config, 5 + j)
-        for j in range(5):
-            env._step(0)
-            print(0)
-            time.sleep(1)
-            env.render()
-            save_image(env.screen, env.config, 10 + j)
+            # time.sleep(1)
+            print(1)
+            image_name = str(i) + '-' + str(6 + j) + '-' + str(1)
+            if terminal:
+                image_name = str(i) + '-' + str(6 + j) + '-' + str(1) + '-terminal'
+            save_image(screen, args, image_name)
+            if terminal:
+                print("Reset Game")
+                _ = env.new_game()
+    """
+
+    action_list = [1, 1, 1, 3, 3, 2, 1, 3, 1, 3, 3, 3, 1, 0, 2, 2, 1, 2, 2, 2, 3, 3, 0, 0, 3]
+    env = gym.make("Breakout-v0")
+    state = env.reset()
+
+    for i in range(len(action_list)):
+        action = action_list[i]
+        screen_next, rewards, terminal, _ = env.step(int(action))
+        height, width, depth = screen_next.shape
+        env.render()
+        image = np.zeros((height * 2, width, depth))
+        image[0:height, :, :] = state
+        image[height:height * 2, :, :] = screen_next
+        image = image.astype(np.uint8)
+        save_image(image, args, str(i) + '-' + str(action))
+        if terminal:
+            print("Reset Game")
+            state = env.reset()
+        else:
+            state = screen_next

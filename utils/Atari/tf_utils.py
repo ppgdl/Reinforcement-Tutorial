@@ -1,6 +1,7 @@
 import cv2
 import os
 import tensorflow as tf
+import numpy as np
 
 
 def rgb2gray(image):
@@ -10,6 +11,7 @@ def rgb2gray(image):
 
 
 def resizeimage(image, height, width):
+    image = image[34:34+160, 0:160, :]
     image = cv2.resize(image, (height, width))
     gray = rgb2gray(image)
 
@@ -21,6 +23,7 @@ def save_image(image, config, index):
         os.makedirs(config.imgpath)
 
     path = os.path.join(config.imgpath, str(index) + '.png')
+    image = cv2.resize(image, (84 * 4, 84 * 4))
 
     cv2.imwrite(path, image)
 
@@ -72,3 +75,29 @@ def huber_loss(x):
         return tf.select(tf.abs(x) < 1.0, 0.5 * tf.square(x), tf.abs(x) - 0.5)
     except:
         return tf.where(tf.abs(x) < 1.0, 0.5 * tf.square(x), tf.abs(x) - 0.5)
+
+
+def visualization_tool(states_batch, display=False):
+    # visualization sample
+    if len(states_batch.shape) == 4:
+        v_sample = states_batch[0, ...]
+        v_image = np.zeros((84*4, 84, 1))
+        for i in range(4):
+            tmp = v_sample[:, :, i:i + 1]
+            v_image[84 * i:84 * (i + 1), :, :] = tmp
+        v_image = v_image.astype(np.uint8)
+        v_image = cv2.resize(v_image, (84 * 4, 84 * 4 * 4))
+    else:
+        v_sample = states_batch
+        v_image = np.zeros((84 * 4, 84, 1))
+        for i in range(4):
+            tmp = v_sample[:, :, i:i + 1]
+            v_image[84 * i:84 * (i + 1), :, :] = tmp
+        v_image = v_image.astype(np.uint8)
+        v_image = cv2.resize(v_image, (84 * 4, 84 * 4 * 4))
+
+    if display:
+        cv2.imshow("sample", v_image)
+        cv2.waitKey(1000)
+
+    return v_image

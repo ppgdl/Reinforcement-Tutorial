@@ -11,6 +11,7 @@ class DQN(object):
 
         # predict network
         self.predict_input_pl = None
+        self.predict_input = None
         self.predicts = None
         self.predict_action = None
         self.predict_action_pl = None
@@ -28,6 +29,7 @@ class DQN(object):
 
         # target network
         self.target_input_pl = None
+        self.target_input = None
         self.targets = None
         self.target_action = None
         self.target_extra = []
@@ -46,15 +48,17 @@ class DQN(object):
         width = self.config.screen_width
         channels = self.config.history_length
         self.predict_input_pl = tf.placeholder(tf.float32, [None, height, width, channels], name='predict_input')
+        self.predict_input = self.predict_input_pl / 255.0
         self.predict_target_pl = tf.placeholder(tf.float32, [None], name='predict_target')
         # real reward [batch_size, action_number]
         self.predict_action_pl = tf.placeholder(tf.float32, [None, 4], name='predict_action')
-        self.predicts, self.predict_action = self._build_network('predict', self.predict_input_pl, trainable=True)
+        self.predicts, self.predict_action, self.predict_tensor_list = self._build_network('predict', self.predict_input, trainable=True)
         self.learning_rate_step = tf.placeholder(tf.int64, None, name='learning_rate_step')
 
         # cal loss
         predict_rewards = self.predicts * self.predict_action_pl
         predict_rewards = tf.reduce_sum(predict_rewards, axis=1)
+        self.predict_tensor_list.append(predict_rewards)
         self.delta = self.predict_target_pl - predict_rewards
         losses = squared_loss(self.delta)
         self.loss = tf.reduce_mean(losses)
@@ -84,10 +88,12 @@ class DQN(object):
         width = self.config.screen_width
         channels = self.config.history_length
         self.target_input_pl = tf.placeholder(tf.float32, [None, height, width, channels], name='target_input')
+        self.target_input = self.target_input_pl / 255.0
         # output reward
-        self.targets, self.target_action = self._build_network('target', self.target_input_pl, trainable=False)
+        self.targets, self.target_action, _ = self._build_network('target', self.target_input, trainable=False)
 
     def _build_network(self, name, input_pl, trainable=True):
+        tensor_list = []
         with tf.variable_scope(name):
             # conv
             conv1 = tf.contrib.layers.conv2d(input_pl, 32, 8, 4, activation_fn=tf.nn.relu,
@@ -106,7 +112,9 @@ class DQN(object):
                                                             trainable=trainable)
             predict_action = tf.argmax(predictions, dimension=1)
 
-            return predictions, predict_action
+            tensor_list = [conv1, conv2, conv3, fc1, predictions]
+
+            return predictions, predict_action, tensor_list
 
     def forward_predict_network(self, input_pl):
         feed_dict = {self.predict_input_pl: input_pl}

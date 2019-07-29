@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--gpu_index', dest='gpu_index', help='GPU Index',
                         default=0, type=int)
     parser.add_argument('--gpu_fraction', dest='gpu_fraction', help='GPU fraction',
-                        default=0.7, type=float)
+                        default=0.4, type=float)
     parser.add_argument('--batch_size', dest='batch_size', help='batch_size',
                         default=32, type=int)
     parser.add_argument('--num_epoch', dest='num_epoch', help='num_epoch',
