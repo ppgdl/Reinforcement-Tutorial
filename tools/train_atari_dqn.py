@@ -2,13 +2,16 @@ import tensorflow as tf
 import argparse
 import os
 import time
+import sys
+ROOT = os.path.join(os.getcwd(), '..')
+sys.path.append(ROOT)
 
 from models.DQN.config import get_config
 from utils.Atari.enviroment import Enviroment
 from models.DQN.DQN import DQN
 from utils.Atari.agent import Agent
 
-ROOT = os.path.join(os.getcwd(), '..')
+
 
 def parse_args():
     """Parse input arguments."""
