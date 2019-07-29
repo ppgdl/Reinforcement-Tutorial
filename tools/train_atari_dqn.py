@@ -54,6 +54,9 @@ def update_log_checkpotin_path(config):
 
 
 if __name__ == '__main__':
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
     args = parse_args()
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_fraction)
