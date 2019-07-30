@@ -32,7 +32,7 @@ class AgentConfig(object):
     min_reward = -1
     action_repeat = 1
     random_start = 30
-    display = True
+    display = False
 
     # agent config
     action_length = 4

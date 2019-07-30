@@ -1,2 +1,17 @@
 *.xml
 *.iml
+*.npy
+*.pkl
+*.ckpt.*
+*.ckpt
+log/
+checkpoint/
+log_image/
+models/ActorCritic/__pycache__/*.pyc
+models/DQN/__pycache__/*.pyc
+models/Line/__pycache__/*.pyc
+models/Maze/__pycache__/*.pyc
+utils/Atari/__pycache__/*.pyc
+utils/Line/__pycache__/*.pyc
+utils/Maze/__pycache__/*.pyc
+*.pyc
