@@ -239,6 +239,7 @@ class Agent(object):
 
                     break
 
+                screen_state = screen_state_next
                 total_step += 1
 
             avg_loss = self.episode_losses[i_epoch] / self.episode_lengths[i_epoch]
