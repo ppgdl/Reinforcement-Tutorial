@@ -2,5 +2,5 @@
 Reiforcenment Learning Tutorial
 
 ##### DQN
-![image](images/DQN-pMax.png)![image](images/DQN-tMax.png)
-![image](images/DQN-pDistribution.png)![image](images/DQN-pHist.png)
+![image](images/DQN-pMax.PNG)![image](images/DQN-tMax.PNG)
+![image](images/DQN-pDistribution.PNG)![image](images/DQN-pHist.PNG)
